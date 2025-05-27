@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'w3-dark': '#212529',
+            'w3-light': '#f8f9fa',
+            'w3-accent': '#007bff'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-w3-dark text-white font-sans dark">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-100 mb-6">Admin Panel</h1>
+
+    <!-- Chapters List -->
+    <div class="bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+      <h2 class="text-xl font-semibold text-gray-200 mb-4">Existing Chapters</h2>
+      <% if (chapters.length === 0) { %>
+        <p class="text-gray-400">No chapters available.</p>
+      <% } else { %>
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-gray-600">
+              <th class="p-2">Title</th>
+              <th class="p-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% chapters.forEach(ch => { %>
+              <tr class="border-b border-gray-600 hover:bg-gray-700">
+                <td class="p-2"><%= ch.title %></td>
+                <td class="p-2">
+                  <a href="/admin/edit/<%= ch._id %>" class="text-blue-400 hover:underline mr-4">Edit</a>
+                  <form action="/admin/delete/<%= ch._id %>" method="POST" style="display:inline;">
+                    <button type="submit" class="text-red-400 hover:underline" onclick="return confirm('Are you sure you want to delete <%= ch.title %>?')">Delete</button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+
+    <!-- Create/Update Form -->
+    <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+      <h2 class="text-xl font-semibold text-gray-200 mb-4"><%= action %> Chapter</h2>
+      <form action="/admin/<%= action === 'Edit' ? 'update/' + chapter._id : 'upload' %>" method="POST" enctype="multipart/form-data" class="space-y-4">
+        <div>
+          <label class="block text-gray-200 font-medium mb-2">Chapter Title</label>
+          <input type="text" name="title" value="<%= chapter ? chapter.title : '' %>" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+        </div>
+        <div>
+          <label class="block text-gray-200 font-medium mb-2">Concept Details</label>
+          <textarea name="concept" required class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg h-24 text-white focus:outline-none focus:ring-2 focus:ring-blue-600"><%= chapter ? chapter.concepts : '' %></textarea>
+        </div>
+        <div>
+          <label class="block text-gray-200 font-medium mb-2">Easy PDF</label>
+          <input type="file" name="easy" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+          <% if (chapter && chapter.easyQuestions.length > 0 && chapter.easyQuestions[0].pdfLink) { %>
+            <p class="text-gray-400 mt-2">Current: <a href="/uploads/<%= chapter.easyQuestions[0].pdfLink %>" class="text-blue-400 hover:underline" target="_blank"><%= chapter.easyQuestions[0].pdfLink %></a></p>
+          <% } %>
+        </div>
+        <div>
+          <label class="block text-gray-200 font-medium mb-2">Medium PDF</label>
+          <input type="file" name="medium" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+          <% if (chapter && chapter.mediumQuestions.length > 0 && chapter.mediumQuestions[0].pdfLink) { %>
+            <p class="text-gray-400 mt-2">Current: <a href="/uploads/<%= chapter.mediumQuestions[0].pdfLink %>" class="text-blue-400 hover:underline" target="_blank"><%= chapter.mediumQuestions[0].pdfLink %></a></p>
+          <% } %>
+        </div>
+        <div>
+          <label class="block text-gray-200 font-medium mb-2">Hard PDF</label>
+          <input type="file" name="hard" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white">
+          <% if (chapter && chapter.hardQuestions.length > 0 && chapter.hardQuestions[0].pdfLink) { %>
+            <p class="text-gray-400 mt-2">Current: <a href="/uploads/<%= chapter.hardQuestions[0].pdfLink %>" class="text-blue-400 hover:underline" target="_blank"><%= chapter.hardQuestions[0].pdfLink %></a></p>
+          <% } %>
+        </div>
+        <div>
+          <label class="block text-gray-200 font-medium mb-2">Questions</label>
+          <div id="questions-container">
+            <% if (chapter && chapter.questions.length > 0) { %>
+              <% chapter.questions.forEach((q, qIndex) => { %>
+                <div class="question mb-4 p-4 bg-gray-700 border border-gray-600 rounded-lg">
+                  <input type="text" name="questions[<%= qIndex %>][question]" value="<%= q.question %>" placeholder="Question" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                  <input type="text" name="questions[<%= qIndex %>][option1]" value="<%= q.options ? q.options[0] : '' %>" placeholder="Option 1" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                  <input type="text" name="questions[<%= qIndex %>][option2]" value="<%= q.options ? q.options[1] : '' %>" placeholder="Option 2" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                  <input type="text" name="questions[<%= qIndex %>][option3]" value="<%= q.options ? q.options[2] : '' %>" placeholder="Option 3" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                  <input type="text" name="questions[<%= qIndex %>][option4]" value="<%= q.options ? q.options[3] : '' %>" placeholder="Option 4" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                  <select name="questions[<%= qIndex %>][correctAnswer]" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                    <option value="">Select Correct Answer</option>
+                    <% if (q.options && q.options.length > 0) { %>
+                      <% q.options.forEach((opt) => { %>
+                        <option value="<%= opt %>" <%= (q.correctAnswer === opt) ? 'selected' : '' %>><%= opt %></option>
+                      <% }) %>
+                    <% } else { %>
+                      <option value="" disabled>Enter options first</option>
+                    <% } %>
+                  </select>
+                  <select name="questions[<%= qIndex %>][difficulty]" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                    <option value="">Select Difficulty</option>
+                    <option value="easy" <%= (q.difficulty === 'easy') ? 'selected' : '' %>>Easy</option>
+                    <option value="medium" <%= (q.difficulty === 'medium') ? 'selected' : '' %>>Medium</option>
+                    <option value="hard" <%= (q.difficulty === 'hard') ? 'selected' : '' %>>Hard</option>
+                  </select>
+                  <% if (qIndex > 0) { %>
+                    <button type="button" class="remove-question bg-red-600 text-white p-2 rounded mt-2 hover:bg-red-700" onclick="this.parentElement.remove()">Remove</button>
+                  <% } %>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="question mb-4 p-4 bg-gray-700 border border-gray-600 rounded-lg">
+                <input type="text" name="questions[0][question]" placeholder="Question" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                <input type="text" name="questions[0][option1]" placeholder="Option 1" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                <input type="text" name="questions[0][option2]" placeholder="Option 2" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                <input type="text" name="questions[0][option3]" placeholder="Option 3" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                <input type="text" name="questions[0][option4]" placeholder="Option 4" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                <select name="questions[0][correctAnswer]" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                  <option value="">Select Correct Answer</option>
+                  <option value="" disabled>Enter options first</option>
+                </select>
+                <select name="questions[0][difficulty]" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                  <option value="">Select Difficulty</option>
+                  <option value="easy">Easy</option>
+                  <option value="medium">Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+                <button type="button" class="add-question bg-blue-600 text-white p-2 rounded mt-2 hover:bg-blue-700">Add Another Question</button>
+              </div>
+            <% } %>
+          </div>
+        </div>
+        <button type="submit" class="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 w-full"><%= action %> Chapter</button>
+      </form>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        let questionCount = <%= chapter ? chapter.questions.length : 0 %>;
+        const container = document.getElementById('questions-container');
+
+        // Event delegation for adding new questions
+        container.addEventListener('click', (e) => {
+          if (e.target.classList.contains('add-question')) {
+            questionCount++;
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question mb-4 p-4 bg-gray-700 border border-gray-600 rounded-lg';
+            questionDiv.innerHTML = `
+              <input type="text" name="questions[${questionCount-1}][question]" placeholder="Question" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+              <input type="text" name="questions[${questionCount-1}][option1]" placeholder="Option 1" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+              <input type="text" name="questions[${questionCount-1}][option2]" placeholder="Option 2" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+              <input type="text" name="questions[${questionCount-1}][option3]" placeholder="Option 3" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <input type="text" name="questions[${questionCount-1}][option4]" placeholder="Option 4" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+              <select name="questions[${questionCount-1}][correctAnswer]" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                <option value="">Select Correct Answer</option>
+                <option value="" disabled>Enter options first</option>
+              </select>
+              <select name="questions[${questionCount-1}][difficulty]" class="w-full p-3 bg-gray-600 border border-gray-500 rounded-lg mb-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+                <option value="">Select Difficulty</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+              <button type="button" class="remove-question bg-red-600 text-white p-2 rounded mt-2 hover:bg-red-700" onclick="this.parentElement.remove()">Remove</button>
+            `;
+            container.appendChild(questionDiv);
+            updateDropdownOptions(questionDiv.querySelector('select[name$="[correctAnswer]"]'), questionDiv);
+          }
+        });
+
+        // Event delegation for removing questions
+        container.addEventListener('click', (e) => {
+          if (e.target.classList.contains('remove-question')) {
+            e.target.parentElement.remove();
+          }
+        });
+
+        // Event delegation for updating dropdown on input change
+        container.addEventListener('input', (e) => {
+          if (e.target.matches('input[name$="[option1]"], input[name$="[option2]"], input[name$="[option3]"], input[name$="[option4]"]')) {
+            const questionDiv = e.target.closest('.question');
+            const select = questionDiv.querySelector('select[name$="[correctAnswer]"]');
+            updateDropdownOptions(select, questionDiv);
+          }
+        });
+
+        function updateDropdownOptions(select, questionDiv) {
+          const optionInputs = questionDiv.querySelectorAll('input[name$="[option1]"], input[name$="[option2]"], input[name$="[option3]"], input[name$="[option4]"]');
+          console.log('Option Inputs Found:', Array.from(optionInputs).map(input => input.value.trim()));
+          select.innerHTML = '<option value="">Select Correct Answer</option>';
+          let hasOptions = false;
+          optionInputs.forEach((input) => {
+            const optValue = input.value.trim();
+            if (optValue) {
+              hasOptions = true;
+              select.innerHTML += `<option value="${optValue}">${optValue}</option>`;
+            }
+          });
+          if (!hasOptions) {
+            select.innerHTML += '<option value="" disabled>Enter options first</option>';
+          } else {
+            // Try to maintain the previously selected value if it still exists
+            const previousValue = select.value;
+            if (previousValue && optionInputs.some(input => input.value.trim() === previousValue)) {
+              select.value = previousValue;
+            }
+          }
+        }
+
+        // Initialize dropdowns for existing questions
+        document.querySelectorAll('.question select[name$="[correctAnswer]"]').forEach((select) => {
+          const questionDiv = select.closest('.question');
+          updateDropdownOptions(select, questionDiv);
+        });
+      });
+    </script>
+</body>
+</html>

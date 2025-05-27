@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz Results: <%= chapter ? chapter.title : 'Unknown Chapter' %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'w3-dark': '#212529',
+            'w3-light': '#f8f9fa',
+            'w3-accent': '#007bff'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-w3-dark text-white font-sans dark">
+  <div class="max-w-2xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-100 mb-6">Quiz Results: <%= chapter ? chapter.title : 'Unknown Chapter' %></h1>
+    <div class="bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+      <% if (typeof score !== 'undefined' && typeof total !== 'undefined') { %>
+        <p class="text-gray-200">Your Score: <span class="font-semibold text-white"><%= score %> / <%= total %></span></p>
+        <p class="text-gray-200">Percentage: <span class="font-semibold text-white"><%= ((score / total) * 100).toFixed(2) %>%</span></p>
+      <% } else { %>
+        <p class="text-red-400">Score data unavailable.</p>
+      <% } %>
+      <% if (user) { %>
+        <p class="text-gray-400 mt-2">Progress saved for this chapter.</p>
+      <% } %>
+    </div>
+    <% if (results && Array.isArray(results) && results.length > 0) { %>
+      <% results.forEach((result, index) => { %>
+        <div class="bg-gray-800 p-4 rounded-lg shadow-md mb-4 <%= result.isCorrect ? 'border-l-4 border-green-500' : 'border-l-4 border-red-500' %>">
+          <p class="text-gray-200 font-semibold mb-2"><%= index + 1 %>. <%= result.question || `Question ${index + 1}` %></p>
+          <p class="text-gray-400">Your Answer: <span class="font-medium text-white"><%= result.userAnswer || 'Not answered' %></span></p>
+          <p class="text-gray-400">Correct Answer: <span class="font-medium text-white"><%= result.correctAnswer || 'Not available' %></span></p>
+          <p class="text-gray-400 font-medium <%= result.isCorrect ? 'text-green-400' : 'text-red-400' %>">
+            <%= result.isCorrect !== undefined ? (result.isCorrect ? 'Correct!' : 'Incorrect') : 'Status unavailable' %>
+          </p>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <p class="text-gray-400">No results available.</p>
+    <% } %>
+    <div class="flex space-x-4">
+      <a href="/quiz/<%= chapter ? chapter._id : '' %>" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 <%= !chapter ? 'cursor-not-allowed opacity-50' : '' %>">Try Again</a>
+      <a href="/chapter/<%= chapter ? chapter._id : '' %>" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 <%= !chapter ? 'cursor-not-allowed opacity-50' : '' %>">Back to Chapter</a>
+    </div>
+  </div>
+</body>
+</html>

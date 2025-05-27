@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quiz: <%= chapter.title %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'w3-dark': '#212529',
+            'w3-light': '#f8f9fa',
+            'w3-accent': '#007bff'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-w3-dark text-white font-sans dark min-h-screen">
+  <div class="max-w-4xl mx-auto p-6">
+    <h1 class="text-3xl font-bold text-gray-100 mb-6">Quiz: <%= chapter.title %></h1>
+    <form action="/quiz/<%= chapter._id %>/submit" method="POST" class="space-y-6">
+      <% if (chapter.questions && chapter.questions.length > 0) { %>
+        <% chapter.questions.forEach((q, index) => { %>
+          <div class="bg-gray-800 p-6 rounded-lg shadow-md">
+            <p class="text-lg mb-4"><%= q.question || `Question ${index + 1}` %></p>
+            <% if (q.options && q.options.length > 0) { %>
+              <% q.options.forEach((option, optIndex) => { %>
+                <div class="mb-2">
+                  <label class="inline-flex items-center">
+                    <input type="radio" name="answer-<%= index %>" value="<%= option %>" class="form-radio text-w3-accent" required>
+                    <span class="ml-2"><%= option %></span>
+                  </label>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <p class="text-red-400">No options available for this question. Options: <%= JSON.stringify(q.options) %></p>
+            <% } %>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="text-red-400">No questions available for this chapter.</p>
+      <% } %>
+      <button type="submit" class="bg-w3-accent text-white p-3 rounded-lg hover:bg-blue-700 w-full">Submit Quiz</button>
+    </form>
+    <p class="mt-4">Progress: <%= chapter.questions ? chapter.questions.length : 0 %> question<%= chapter.questions && chapter.questions.length === 1 ? '' : 's' %></p>
+  </div>
+</body>
+</html>

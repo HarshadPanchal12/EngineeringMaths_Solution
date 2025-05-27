@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Home - <%= user ? user.username : 'Guest' %></title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            'w3-dark': '#212529',
+            'w3-light': '#f8f9fa',
+            'w3-accent': '#007bff'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-w3-dark text-white font-sans dark flex">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gray-800 shadow-lg p-6">
+    <h2 class="text-2xl font-bold text-blue-400 mb-6">Chapters</h2>
+    <% if (chapters.length === 0) { %>
+      <p class="text-gray-400">No chapters available.</p>
+    <% } else { %>
+      <% chapters.forEach(ch => { %>
+        <a href="/chapter/<%= ch._id %>" class="block text-blue-400 hover:bg-gray-700 p-2 rounded mb-2"><%= ch.title %></a>
+      <% }) %>
+    <% } %>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6">
+    <h1 class="text-3xl font-bold text-gray-100 mb-6">Welcome<%= user ? `, ${user.username}` : '' %>!</h1>
+    <p class="text-gray-300 mb-4">Select a chapter to start learning.</p>
+    <% if (user && user.role === 'admin') { %>
+      <a href="/admin" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">Admin Panel</a>
+    <% } %>
+    <a href="/progress" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 mt-4 inline-block">View Progress</a>
+  </main>
+</body>
+</html>
